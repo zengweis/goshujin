@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="shortcut icon" href="/titleico.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>狗修金！</title>
+<style>
+    /* CSS 样式 */
+    #counter {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+    .emoticon {
+        position: absolute;
+        left: 0;
+        transform: translateY(-50%);
+        font-size: 24px;
+        white-space: nowrap; /* 防止文字换行 */
+        opacity: 0; /* 初始不可见 */
+    }
+</style>
+</head>
+<body>
+    <!-- 点击次数计数器 -->
+    <p id="counter">小从雨已经说了: <span id="count">0</span>次ご主人啦</p>
+
+    <script>
+        // JavaScript 代码
+        // 初始化点击次数为 0
+        let count = 0;
+        // 获取计数器元素
+        const counter = document.getElementById('count');
+
+        // 当页面被点击时触发的事件监听器
+        document.addEventListener('click', () => {
+            // 点击次数加 1
+            count++;
+            // 更新显示的点击次数
+            counter.textContent = count;
+            // 生成并移动颜文字
+            generateEmoticon();
+            // 播放音频
+            playAudio();
+            // 发送点击次数到服务器的代码...
+        });
+
+        // 随机获取字体和字号
+        function getRandomFont() {
+            const fonts = ['Arial', 'Verdana', 'Helvetica', 'Tahoma', 'Times New Roman'];
+            const fontSizes = ['16px', '20px', '24px', '28px', '32px'];
+            const randomFont = fonts[Math.floor(Math.random() * fonts.length)];
+            const randomFontSize = fontSizes[Math.floor(Math.random() * fontSizes.length)];
+            return `${randomFontSize} ${randomFont}`;
+        }
+
+        // 生成随机颜色
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        // 生成并移动颜文字函数
+        function generateEmoticon() {
+            // 创建一个新的颜文字元素
+            const newEmoticon = document.createElement('div');
+            newEmoticon.className = 'emoticon';
+            newEmoticon.textContent = 'ごしゅじん〜〜';
+            // 设置随机字体和字号
+            newEmoticon.style.font = getRandomFont();
+            // 设置随机颜色
+            newEmoticon.style.color = getRandomColor();
+            // 设置随机 y 轴位置
+            newEmoticon.style.top = `${Math.random() * window.innerHeight}px`;
+            // 将新的颜文字元素添加到页面上
+            document.body.appendChild(newEmoticon);
+            // 启动颜文字动画
+            moveEmoticon(newEmoticon);
+        }
+
+        // 颜文字动画函数
+        function moveEmoticon(emoticon) {
+            let pos = 0; // 初始位置在左边界外
+            const id = setInterval(frame, 10);
+            function frame() {
+                if (pos >= window.innerWidth) {
+                    // 当颜文字移动到页面右边界时，停止动画并移除元素
+                    clearInterval(id);
+                    emoticon.parentNode.removeChild(emoticon);
+                } else {
+                    // 向右移动一个像素
+                    pos++;
+                    emoticon.style.left = pos + 'px';
+                    emoticon.style.opacity = 1; // 逐渐变得可见
+                }
+            }
+        }
+
+        // 播放音频函数
+        function playAudio() {
+            const audio = new Audio('goshujin.mp3');
+            audio.play();
+        }
+    </script>
+</body>
+</html>
