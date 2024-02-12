@@ -5,21 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>狗修金！</title>
-<style>
-    /* CSS 样式 */
-    #counter {
-        font-size: 24px;
-        margin-bottom: 20px;
-    }
-    .emoticon {
-        position: absolute;
-        left: 0;
-        transform: translateY(-50%);
-        font-size: 24px;
-        white-space: nowrap; /* 防止文字换行 */
-        opacity: 0; /* 初始不可见 */
-    }
-</style>
+    <style>
+        /* CSS 样式 */
+        #counter {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .emoticon {
+            position: absolute;
+            left: 0;
+            transform: translateY(-50%);
+            font-size: 24px;
+            white-space: nowrap; /* 防止文字换行 */
+            opacity: 0; /* 初始不可见 */
+        }
+    </style>
 </head>
 <body>
     <!-- 点击次数计数器 -->
@@ -27,6 +27,11 @@
 
     <script>
         // JavaScript 代码
+        // 页面加载时从后端获取当前点击次数并更新到页面上
+        window.addEventListener('load', function() {
+            fetchClickCountAndUpdateUI();
+        });
+
         // 初始化点击次数为 0
         let count = 0;
         // 获取计数器元素
@@ -42,26 +47,32 @@
             generateEmoticon();
             // 播放音频
             playAudio();
-            // 发送点击次数到服务器的代码...
+            // 发送点击次数到服务器
+            sendClickCount();
         });
 
-        // 随机获取字体和字号
-        function getRandomFont() {
-            const fonts = ['Arial', 'Verdana', 'Helvetica', 'Tahoma', 'Times New Roman'];
-            const fontSizes = ['16px', '20px', '24px', '28px', '32px'];
-            const randomFont = fonts[Math.floor(Math.random() * fonts.length)];
-            const randomFontSize = fontSizes[Math.floor(Math.random() * fontSizes.length)];
-            return `${randomFontSize} ${randomFont}`;
-        }
-
-        // 生成随机颜色
-        function getRandomColor() {
-            const letters = '0123456789ABCDEF';
-            let color = '#';
-            for (let i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
-            return color;
+        // 发送点击次数到服务器的函数
+        function sendClickCount() {
+            // 使用 Fetch API 发送 POST 请求到服务器
+            fetch('updateClickCount.php', {
+                method: 'POST', // 请求方法为 POST
+                headers: {
+                    'Content-Type': 'application/json' // 请求头指定内容类型为 JSON
+                },
+                body: JSON.stringify({ count: count }) // 发送当前点击次数
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析响应数据为 JSON
+            })
+            .then(data => {
+                console.log('Click count updated:', data); // 输出响应数据到控制台
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error); // 捕获并处理请求错误
+            });
         }
 
         // 生成并移动颜文字函数
@@ -104,6 +115,43 @@
         function playAudio() {
             const audio = new Audio('goshujin.mp3');
             audio.play();
+        }
+
+        // 获取随机字体和字号
+        function getRandomFont() {
+            const fonts = ['Arial', 'Verdana', 'Helvetica', 'Tahoma', 'Times New Roman'];
+            const fontSizes = ['16px', '20px', '24px', '28px', '32px'];
+            const randomFont = fonts[Math.floor(Math.random() * fonts.length)];
+            const randomFontSize = fontSizes[Math.floor(Math.random() * fontSizes.length)];
+            return `${randomFontSize} ${randomFont}`;
+        }
+
+        // 获取随机颜色
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        // 获取当前点击次数并更新到页面上
+        function fetchClickCountAndUpdateUI() {
+            fetch('getClickCount.php')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text(); // 解析响应数据为文本
+                })
+                .then(data => {
+                    count = parseInt(data); // 更新全局点击次数变量
+                    counter.textContent = count; // 更新页面上的点击次数
+                })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error); // 捕获并处理请求错误
+                });
         }
     </script>
 </body>
