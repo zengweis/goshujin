@@ -24,40 +24,37 @@
 <body>
     <!-- 点击次数计数器 -->
     <p id="counter">小从雨已经说了: <span id="count">0</span>次ご主人啦</p>
+    <p4>试着点击任意位置 </p4>
 
     <script>
         // JavaScript 代码
+        let count = 0; // 初始化点击次数
+        const counter = document.getElementById('count');
+
+        // 预加载音频，避免重复加载
+        const audio = new Audio('goshujin.mp3');
+        audio.preload = 'auto'; // 预加载音频
+
         // 页面加载时从后端获取当前点击次数并更新到页面上
         window.addEventListener('load', function() {
             fetchClickCountAndUpdateUI();
         });
 
-        // 初始化点击次数为 0
-        let count = 0;
-        // 获取计数器元素
-        const counter = document.getElementById('count');
-
         // 当页面被点击时触发的事件监听器
         document.addEventListener('click', () => {
-            // 点击次数加 1
-            count++;
-            // 更新显示的点击次数
-            counter.textContent = count;
-            // 生成并移动颜文字
-            generateEmoticon();
-            // 播放音频
-            playAudio();
-            // 发送点击次数到服务器
-            sendClickCount();
+            count++; // 点击次数加 1
+            counter.textContent = count; // 更新点击次数显示
+            generateEmoticon(); // 生成并移动颜文字
+            playAudio(); // 播放音频
+            sendClickCount(); // 发送点击次数到服务器
         });
 
         // 发送点击次数到服务器的函数
         function sendClickCount() {
-            // 使用 Fetch API 发送 POST 请求到服务器
             fetch('updateClickCount.php', {
-                method: 'POST', // 请求方法为 POST
+                method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json' // 请求头指定内容类型为 JSON
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ count: count }) // 发送当前点击次数
             })
@@ -65,65 +62,54 @@
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
-                return response.json(); // 解析响应数据为 JSON
+                return response.json();
             })
             .then(data => {
-                console.log('Click count updated:', data); // 输出响应数据到控制台
+                console.log('Click count updated:', data);
             })
             .catch(error => {
-                console.error('There was a problem with the fetch operation:', error); // 捕获并处理请求错误
+                console.error('There was a problem with the fetch operation:', error);
             });
         }
 
         // 生成并移动颜文字函数
         function generateEmoticon() {
-            // 创建一个新的颜文字元素
             const newEmoticon = document.createElement('div');
             newEmoticon.className = 'emoticon';
             newEmoticon.textContent = 'ごしゅじん〜〜';
-            // 设置随机字体和字号
             newEmoticon.style.font = getRandomFont();
-            // 设置随机颜色
             newEmoticon.style.color = getRandomColor();
-            // 设置随机 y 轴位置
             newEmoticon.style.top = `${Math.random() * window.innerHeight}px`;
-            // 将新的颜文字元素添加到页面上
             document.body.appendChild(newEmoticon);
-            // 启动颜文字动画
-            moveEmoticon(newEmoticon);
+            moveEmoticon(newEmoticon); // 启动动画
         }
 
         // 颜文字动画函数
         function moveEmoticon(emoticon) {
-            let pos = 0; // 初始位置在左边界外
-            const id = setInterval(frame, 10);
-            function frame() {
+            let pos = 0;
+            const id = setInterval(() => {
                 if (pos >= window.innerWidth) {
-                    // 当颜文字移动到页面右边界时，停止动画并移除元素
                     clearInterval(id);
                     emoticon.parentNode.removeChild(emoticon);
                 } else {
-                    // 向右移动一个像素
                     pos++;
                     emoticon.style.left = pos + 'px';
-                    emoticon.style.opacity = 1; // 逐渐变得可见
+                    emoticon.style.opacity = 1;
                 }
-            }
+            }, 10);
         }
 
         // 播放音频函数
         function playAudio() {
-            const audio = new Audio('goshujin.mp3');
-            audio.play();
+            audio.currentTime = 0; // 确保每次播放从头开始
+            audio.play(); // 播放音频
         }
 
         // 获取随机字体和字号
         function getRandomFont() {
             const fonts = ['Arial', 'Verdana', 'Helvetica', 'Tahoma', 'Times New Roman'];
             const fontSizes = ['16px', '20px', '24px', '28px', '32px'];
-            const randomFont = fonts[Math.floor(Math.random() * fonts.length)];
-            const randomFontSize = fontSizes[Math.floor(Math.random() * fontSizes.length)];
-            return `${randomFontSize} ${randomFont}`;
+            return `${fontSizes[Math.floor(Math.random() * fontSizes.length)]} ${fonts[Math.floor(Math.random() * fonts.length)]}`;
         }
 
         // 获取随机颜色
@@ -143,14 +129,14 @@
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
                     }
-                    return response.text(); // 解析响应数据为文本
+                    return response.text();
                 })
                 .then(data => {
-                    count = parseInt(data); // 更新全局点击次数变量
-                    counter.textContent = count; // 更新页面上的点击次数
+                    count = parseInt(data);
+                    counter.textContent = count;
                 })
                 .catch(error => {
-                    console.error('There was a problem with the fetch operation:', error); // 捕获并处理请求错误
+                    console.error('There was a problem with the fetch operation:', error);
                 });
         }
     </script>
