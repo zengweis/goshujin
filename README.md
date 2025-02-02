@@ -1,4 +1,8 @@
-本作品网址http://www.goshujin.cc
+
+一个可以让从雨一直叫你主人的项目
+
+
+本作品网址http://goshujin.site
 环境要求：
 php、mysql
 代码有详细注释，服务器需创建sql，sql库名可在两份php文件中自行更改，默认为
