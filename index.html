@@ -6,138 +6,145 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>狗修金！</title>
     <style>
-        /* CSS 样式 */
         #counter {
             font-size: 24px;
             margin-bottom: 20px;
+            font-family: 'Arial', sans-serif;
         }
         .emoticon {
             position: absolute;
             left: 0;
             transform: translateY(-50%);
             font-size: 24px;
-            white-space: nowrap; /* 防止文字换行 */
-            opacity: 0; /* 初始不可见 */
+            white-space: nowrap;
+            opacity: 0;
+            will-change: transform;
+            transition: transform 0.2s ease-out;
+            pointer-events: none;
+        }
+        p4 {
+            color: #666;
+            font-style: italic;
+            margin-top: 10px;
+            display: block;
+        }
+        body {
+            min-height: 100vh;
+            margin: 20px;
+            background: #f8f9fa;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <!-- 点击次数计数器 -->
     <p id="counter">小从雨已经说了: <span id="count">0</span>次ご主人啦</p>
     <p4>试着点击任意位置 </p4>
 
     <script>
-        // JavaScript 代码
-        let count = 0; // 初始化点击次数
+        let count = 0;
         const counter = document.getElementById('count');
-
-        // 预加载音频，避免重复加载
-        const audio = new Audio('goshujin.mp3');
-        audio.preload = 'auto'; // 预加载音频
-
-        // 页面加载时从后端获取当前点击次数并更新到页面上
+        let isFirstInteraction = true;
+        // 初始化
         window.addEventListener('load', function() {
             fetchClickCountAndUpdateUI();
+            // 预加载一个音频实例用于首次快速播放
+            new Audio('goshujin.mp3').load();
         });
 
-        // 当页面被点击时触发的事件监听器
+        // 点击处理
         document.addEventListener('click', () => {
-            count++; // 点击次数加 1
-            counter.textContent = count; // 更新点击次数显示
-            generateEmoticon(); // 生成并移动颜文字
-            playAudio(); // 播放音频
-            sendClickCount(); // 发送点击次数到服务器
+            // 更新计数器
+            count++;
+            counter.textContent = count;
+            
+            // 生成效果
+            generateEmoticon();
+            
+            // 立即播放音频
+            playUnrestrictedAudio();
+            
+            // 发送计数
+            sendClickCount();
         });
 
-        // 发送点击次数到服务器的函数
-        function sendClickCount() {
-            fetch('updateClickCount.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ count: count }) // 发送当前点击次数
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
+        //  音频播放系统
+        function playUnrestrictedAudio() {
+            const audio = new Audio('goshujin.mp3');
+            
+            // 自动清理已完成播放的音频
+            audio.addEventListener('ended', () => {
+                audio.remove();
+            });
+
+            audio.play().catch(error => {
+                if(isFirstInteraction) {
+                    // 处理首次交互需要
+                    document.body.addEventListener('click', () => {
+                        audio.play();
+                    }, { once: true });
+                    isFirstInteraction = false;
                 }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Click count updated:', data);
-            })
-            .catch(error => {
-                console.error('There was a problem with the fetch operation:', error);
             });
         }
 
-        // 生成并移动颜文字函数
+        // 颜文字动画
         function generateEmoticon() {
-            const newEmoticon = document.createElement('div');
-            newEmoticon.className = 'emoticon';
-            newEmoticon.textContent = 'ごしゅじん〜〜';
-            newEmoticon.style.font = getRandomFont();
-            newEmoticon.style.color = getRandomColor();
-            newEmoticon.style.top = `${Math.random() * window.innerHeight}px`;
-            document.body.appendChild(newEmoticon);
-            moveEmoticon(newEmoticon); // 启动动画
+            const emoticon = document.createElement('div');
+            emoticon.className = 'emoticon';
+            emoticon.textContent = 'ごしゅじん〜〜';
+            emoticon.style.font = getRandomFont();
+            emoticon.style.color = getRandomColor();
+            emoticon.style.top = `${Math.random() * 80 + 10}%`; // 10%-90%区域
+            document.body.appendChild(emoticon);
+            animateEmoticon(emoticon);
         }
 
-        // 颜文字动画函数
-        function moveEmoticon(emoticon) {
+        function animateEmoticon(element) {
             let pos = 0;
-            const id = setInterval(() => {
-                if (pos >= window.innerWidth) {
-                    clearInterval(id);
-                    emoticon.parentNode.removeChild(emoticon);
+            const animation = () => {
+                pos += 3;
+                const jitterX = Math.random() * 10 - 5;
+                const jitterY = Math.random() * 10 - 5;
+                
+                element.style.left = `${pos}px`;
+                element.style.transform = `translate(${jitterX}px, ${jitterY}px)`;
+                element.style.opacity = 1 - (pos / window.innerWidth);
+
+                if (pos < window.innerWidth) {
+                    requestAnimationFrame(animation);
                 } else {
-                    pos++;
-                    emoticon.style.left = pos + 'px';
-                    emoticon.style.opacity = 1;
+                    element.remove();
                 }
-            }, 10);
+            };
+            requestAnimationFrame(animation);
         }
 
-        // 播放音频函数
-        function playAudio() {
-            audio.currentTime = 0; // 确保每次播放从头开始
-            audio.play(); // 播放音频
+        // 网络请求
+        function sendClickCount() {
+            fetch('updateClickCount.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ count })
+            }).catch(console.error);
         }
 
-        // 获取随机字体和字号
-        function getRandomFont() {
-            const fonts = ['Arial', 'Verdana', 'Helvetica', 'Tahoma', 'Times New Roman'];
-            const fontSizes = ['16px', '20px', '24px', '28px', '32px'];
-            return `${fontSizes[Math.floor(Math.random() * fontSizes.length)]} ${fonts[Math.floor(Math.random() * fonts.length)]}`;
-        }
-
-        // 获取随机颜色
-        function getRandomColor() {
-            const letters = '0123456789ABCDEF';
-            let color = '#';
-            for (let i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
-            return color;
-        }
-
-        // 获取当前点击次数并更新到页面上
         function fetchClickCountAndUpdateUI() {
             fetch('getClickCount.php')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.text();
-                })
+                .then(response => response.text())
                 .then(data => {
-                    count = parseInt(data);
+                    count = parseInt(data) || 0;
                     counter.textContent = count;
                 })
-                .catch(error => {
-                    console.error('There was a problem with the fetch operation:', error);
-                });
+                .catch(console.error);
+        }
+
+        // 工具函数
+        function getRandomFont() {
+            return `${Math.floor(20 + Math.random() * 12)}px ${['Arial', 'Comic Sans MS', 'Verdana'][Math.floor(Math.random()*3)]}`;
+        }
+
+        function getRandomColor() {
+            return `hsl(${Math.random()*360}, 75%, 60%)`;
         }
     </script>
 </body>
