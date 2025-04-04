@@ -14,11 +14,11 @@ $dbname = "clickcount"; <br>
 1.打开sql  mysql -u ClickCount -p <br>
 2.选择创建的库  USE clickcount <br>
 3.创建表  <br>
-～～～
+
 CREATE TABLE click_counts ( <br>
     id INT PRIMARY KEY, <br>
     count INT <br>
 ); <br>
-～～～
+
 4.插入数据  INSERT INTO click_counts (id, count) VALUES (1, 0); <br>
 
