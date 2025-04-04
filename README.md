@@ -20,4 +20,3 @@ $dbname = "clickcount";
 
 4.插入数据  INSERT INTO click_counts (id, count) VALUES (1, 0);
 
-请按照GPL3.0协议进行转载，使用，欢迎创作更多同类作品 Ciallo～～
